@@ -255,6 +255,24 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         }
 
         /// <summary>
+        /// Gets the subscription object for the specified configuration
+        /// </summary>
+        /// <param name="configuration">The subscription's configuration</param>
+        /// <returns>The subscription object or null</returns>
+        public Subscription GetSubscription(SubscriptionDataConfig configuration)
+        {
+            // remove the subscription from our collection, if it exists
+            Subscription subscription;
+
+            if (_subscriptions.TryGetValue(configuration, out subscription))
+            {
+                return subscription;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Primary entry point.
         /// </summary>
         public void Run()
@@ -281,7 +299,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                     foreach (var subscription in Subscriptions)
                     {
                         var config = subscription.Configuration;
-                        var packet = new DataFeedPacket(subscription.Security, config);
+                        var packet = new DataFeedPacket(subscription.Security, config, subscription.RemovedFromUniverse);
 
                         // dequeue data that is time stamped at or before this frontier
                         while (subscription.MoveNext() && subscription.Current != null)

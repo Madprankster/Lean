@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuantConnect.Data;
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Data.Market;
 using QuantConnect.Data.UniverseSelection;
@@ -33,6 +34,7 @@ namespace QuantConnect.Algorithm.CSharp
     public class CoarseFineFundamentalRegressionAlgorithm : QCAlgorithm
     {
         private const int NumberOfSymbolsFine = 2;
+        private readonly Dictionary<Symbol, DateTime> RemovedTimesBySymbol = new Dictionary<Symbol, DateTime>();
 
         // initialize our changes to nothing
         private SecurityChanges _changes = SecurityChanges.None;
@@ -114,6 +116,21 @@ namespace QuantConnect.Algorithm.CSharp
             _changes = SecurityChanges.None;
         }
 
+        public override void OnData(Slice data)
+        {
+            // verify we don't receive data for inactive securities
+            var inactiveSymbols = data.Keys
+                .Where(sym => !UniverseManager.ActiveSecurities.ContainsKey(sym))
+                // on daily data we'll get the last data point and the delisting at the same time
+                .Where(sym => !data.Delistings.ContainsKey(sym) || data.Delistings[sym].Type != DelistingType.Delisted)
+                .ToList();
+            if (inactiveSymbols.Any())
+            {
+                var symbols = string.Join(", ", inactiveSymbols);
+                throw new Exception($"Received data for non-active security: {symbols}.");
+            }
+        }
+
         // this event fires whenever we have changes to our universe
         public override void OnSecuritiesChanged(SecurityChanges changes)
         {
@@ -126,6 +143,11 @@ namespace QuantConnect.Algorithm.CSharp
             if (changes.RemovedSecurities.Count > 0)
             {
                 Debug("Securities removed: " + string.Join(",", changes.RemovedSecurities.Select(x => x.Symbol.Value)));
+            }
+
+            foreach (var removed in changes.RemovedSecurities)
+            {
+                RemovedTimesBySymbol[removed.Symbol] = Time;
             }
         }
     }

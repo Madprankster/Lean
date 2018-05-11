@@ -304,6 +304,9 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 }
                 else
                 {
+                    // mark the subscription as removed from the universe
+                    var dfSubscription = _dataFeed.GetSubscription(subscription.Configuration);
+                    dfSubscription?.MarkAsRemovedFromUniverse();
                     _dataFeed.RemoveSubscription(subscription.Configuration);
                 }
             }

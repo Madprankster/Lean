@@ -266,6 +266,24 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         }
 
         /// <summary>
+        /// Gets the subscription object for the specified configuration
+        /// </summary>
+        /// <param name="configuration">The subscription's configuration</param>
+        /// <returns>The subscription object or null</returns>
+        public Subscription GetSubscription(SubscriptionDataConfig configuration)
+        {
+            // remove the subscription from our collection, if it exists
+            Subscription subscription;
+
+            if (_subscriptions.TryGetValue(configuration, out subscription))
+            {
+                return subscription;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Main routine for datafeed analysis.
         /// </summary>
         /// <remarks>This is a hot-thread and should be kept extremely lean. Modify with caution.</remarks>
@@ -464,7 +482,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             syncer.SubscriptionFinished += (sender, subscription) =>
             {
                 RemoveSubscription(subscription.Configuration);
-                Log.Debug(string.Format("FileSystemDataFeed.GetEnumerator(): Finished subscription: {0} at {1} UTC", subscription.Configuration, _algorithm.UtcTime));
+                    Log.Debug($"FileSystemDataFeed.GetEnumerator(): Finished subscription: {subscription.Configuration} at {_algorithm.UtcTime} UTC");
             };
 
             while (!_cancellationTokenSource.IsCancellationRequested)

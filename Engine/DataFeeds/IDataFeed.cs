@@ -1,11 +1,11 @@
 ﻿/*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,6 +66,13 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// <param name="configuration">The configuration of the subscription to remove</param>
         /// <returns>True if the subscription was successfully removed, false otherwise</returns>
         bool RemoveSubscription(SubscriptionDataConfig configuration);
+
+        /// <summary>
+        /// Gets the subscription object for the specified configuration
+        /// </summary>
+        /// <param name="configuration">The subscription's configuration</param>
+        /// <returns>The subscription object or null</returns>
+        Subscription GetSubscription(SubscriptionDataConfig configuration);
 
         /// <summary>
         /// Primary entry point.

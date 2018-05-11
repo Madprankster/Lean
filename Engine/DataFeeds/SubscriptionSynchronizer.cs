@@ -20,6 +20,7 @@ using NodaTime;
 using QuantConnect.Data;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Securities;
+using QuantConnect.Util;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -94,7 +95,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                         }
                     }
 
-                    var packet = new DataFeedPacket(subscription.Security, subscription.Configuration);
+                    var packet = new DataFeedPacket(subscription.Security, subscription.Configuration, subscription.RemovedFromUniverse);
 
                     while (subscription.Current.EmitTimeUtc <= _frontier)
                     {
@@ -170,7 +171,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                     universeDataForTimeSliceCreate[universe] = baseDataCollection;
                     newChanges += _universeSelection.ApplyUniverseSelection(universe, _frontier, baseDataCollection);
                 }
-                universeData.Clear();;
+                universeData.Clear();
 
                 changes += newChanges;
             }

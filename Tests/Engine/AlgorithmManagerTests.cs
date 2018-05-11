@@ -169,6 +169,11 @@ namespace QuantConnect.Tests.Engine
                 return true;
             }
 
+            public Subscription GetSubscription(SubscriptionDataConfig configuration)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Run()
             {
             }
