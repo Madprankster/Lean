@@ -1602,29 +1602,63 @@ namespace QuantConnect.Algorithm
                 // cancel open orders
                 Transactions.CancelOpenOrders(security.Symbol);
 
+                // liquidate if invested
+                if (security.Invested)
+                {
+                    Liquidate(security.Symbol);
+                }
+
                 // Clear cache
                 security.Cache.Reset();
 
-                // liquidate if invested
-                if (security.Invested) Liquidate(security.Symbol);
+                // mark security as not tradable
+                security.IsTradable = false;
 
-                var universe = UniverseManager.Select(x => x.Value).OfType<UserDefinedUniverse>().FirstOrDefault(x => x.Members.ContainsKey(symbol));
-                if (universe != null)
+                if (symbol.IsCanonical())
                 {
-                    var ret = universe.Remove(symbol);
-
-                    // if we are removing the symbol which is also the benchmark, add it back as internal feed
-                    if (symbol == _benchmarkSymbol)
+                    // remove underlying equity data if it's marked as internal
+                    var universe = UniverseManager.Select(x => x.Value).FirstOrDefault(x => x.Configuration.Symbol == symbol);
+                    if (universe != null)
                     {
-                        Securities.Remove(symbol);
+                        // remove child securities (option contracts for option chain universes)
+                        foreach (var child in universe.Members.Values)
+                        {
+                            RemoveSecurity(child.Symbol);
+                        }
 
-                        security = CreateBenchmarkSecurity();
-                        AddToUserDefinedUniverse(security);
+                        // finally, dispose and remove the canonical security from the universe manager
+                        UniverseManager.Remove(symbol);
                     }
 
-                    SubscriptionManager.HasCustomData = universe.Members.Any(x => x.Value.Subscriptions.Any(y => y.IsCustomData));
+                    if (symbol.HasUnderlying)
+                    {
+                        var underlying = Securities[symbol.Underlying];
+                        if (!UniverseManager.Any(ukvp => !ReferenceEquals(ukvp.Value, universe) && ukvp.Value.Members.ContainsKey(underlying.Symbol)))
+                        {
+                            RemoveSecurity(underlying.Symbol);
+                        }
+                    }
+                }
+                else
+                {
+                    var universe = UniverseManager.Select(x => x.Value).OfType<UserDefinedUniverse>().FirstOrDefault(x => x.Members.ContainsKey(symbol));
+                    if (universe != null)
+                    {
+                        var ret = universe.Remove(symbol);
 
-                    return ret;
+                        // if we are removing the symbol which is also the benchmark, add it back as internal feed
+                        if (symbol == _benchmarkSymbol)
+                        {
+                            Securities.Remove(symbol);
+
+                            security = CreateBenchmarkSecurity();
+                            AddToUserDefinedUniverse(security);
+                        }
+
+                        SubscriptionManager.HasCustomData = universe.Members.Any(x => x.Value.Subscriptions.Any(y => y.IsCustomData));
+
+                        return ret;
+                    }
                 }
             }
             return false;

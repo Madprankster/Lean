@@ -482,7 +482,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             syncer.SubscriptionFinished += (sender, subscription) =>
             {
                 RemoveSubscription(subscription.Configuration);
-                    Log.Debug($"FileSystemDataFeed.GetEnumerator(): Finished subscription: {subscription.Configuration} at {_algorithm.UtcTime} UTC");
+                Log.Debug($"FileSystemDataFeed.GetEnumerator(): Finished subscription: {subscription.Configuration} at {_algorithm.UtcTime} UTC");
             };
 
             while (!_cancellationTokenSource.IsCancellationRequested)

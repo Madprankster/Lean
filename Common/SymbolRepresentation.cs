@@ -176,11 +176,27 @@ namespace QuantConnect
         /// Returns option symbol ticker in accordance with OSI symbology
         /// More information can be found at http://www.optionsclearing.com/components/docs/initiatives/symbology/symbology_initiative_v1_8.pdf
         /// </summary>
+        /// <param name="symbol">Symbol object to create OSI ticker from</param>
+        /// <returns>The OSI ticker representation</returns>
+        public static string GenerateOptionTickerOSI(Symbol symbol)
+        {
+            if (symbol.SecurityType != SecurityType.Option)
+            {
+                throw new ArgumentException($"{nameof(GenerateOptionTickerOSI)} returns symbol to be an option, received {symbol.SecurityType}.");
+            }
+
+            return GenerateOptionTickerOSI(symbol.Underlying.Value, symbol.ID.OptionRight, symbol.ID.StrikePrice, symbol.ID.Date);
+        }
+
+        /// <summary>
+        /// Returns option symbol ticker in accordance with OSI symbology
+        /// More information can be found at http://www.optionsclearing.com/components/docs/initiatives/symbology/symbology_initiative_v1_8.pdf
+        /// </summary>
         /// <param name="underlying">Underlying string</param>
         /// <param name="right">Option right</param>
         /// <param name="strikePrice">Option strike</param>
         /// <param name="expiration">Option expiration date</param>
-        /// <returns></returns>
+        /// <returns>The OSI ticker representation</returns>
         public static string GenerateOptionTickerOSI(string underlying, OptionRight right, decimal strikePrice, DateTime expiration)
         {
             if (underlying.Length > 5) underlying += " ";
